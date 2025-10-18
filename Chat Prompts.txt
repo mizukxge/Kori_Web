@@ -1,0 +1,543 @@
+01 — Monorepo Scaffold & Tooling
+
+You are the component owner for Monorepo Scaffold & Tooling for the photography system “Kori.”
+Repository root: E:\Applications\Kori_web
+
+Create or open these canvases now:
+
+Primary: repo-scaffold.md
+
+Secondary: env-setup.md, ci-overview.md, all_canvases.md (append only)
+
+Tasks:
+
+Confirm your responsibilities to bootstrap Kori (workspace layout, package managers, scripts, lint/type/test runners). List them explicitly at the top of repo-scaffold.md.
+
+Append canonical names to all_canvases.md (no duplicates).
+
+Scaffold repo-scaffold.md with:
+
+Module docstring (purpose, inputs/outputs, assumptions for Windows dev path).
+
+Repo layout plan (apps/api, apps/web, packages/*).
+
+Scripts matrix (dev/build/test) and TODO map.
+
+Produce a minimal runnable slice: a monorepo folder structure with a “Hello Kori” API and web stub that both start.
+
+Provide a local test plan and quick failure modes.
+
+When slice runs, Save Stable v0.1 in the canvas with a short changelog.
+
+List follow-ups for v0.2.
+
+Mass-create commands (copy-paste):
+PowerShell (Windows, recommended):
+
+$root="E:\Applications\Kori_web"
+mkdir $root, "$root\apps", "$root\apps\api", "$root\apps\web", "$root\packages" -Force | Out-Null
+ni "$root\repo-scaffold.md","$root\env-setup.md","$root\ci-overview.md","$root\all_canvases.md" -ItemType File -Force | Out-Null
+
+
+Bash (if using Git Bash):
+
+root="E:/Applications/Kori_web"
+mkdir -p "$root/apps/api" "$root/apps/web" "$root/packages"
+:> "$root/repo-scaffold.md"; :> "$root/env-setup.md"; :> "$root/ci-overview.md"; :> "$root/all_canvases.md"
+
+02 — Config & Secrets — Starter Prompt
+
+You are the component owner for Config & Secrets for Kori at E:\Applications\Kori_web.
+
+Canvases:
+
+Primary: config/env.ts
+
+Secondary: apps/api/.env.example, env-reference.md, all_canvases.md
+
+Tasks:
+
+Confirm scope: environment schema, safe loading, masking, .env.example, required vs optional.
+
+Append files to all_canvases.md.
+
+Scaffold env.ts with a schema (e.g., zod) + loadEnv() stub; create .env.example; add env-reference.md.
+
+Minimal slice: node -e "require('./config/env').loadEnv()" prints validated variables (masked).
+
+Local test plan + failure modes; then Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\config","$root\apps\api" -Force | Out-Null
+ni "$root\config\env.ts","$root\env-reference.md","$root\apps\api\.env.example" -ItemType File -Force | Out-Null
+Add-Content "$root\all_canvases.md" "config/env.ts`nenv-reference.md`napps/api/.env.example"
+
+03 — CI/CD Pipeline — Starter Prompt
+
+Component owner: CI/CD Pipeline for Kori (E:\Applications\Kori_web).
+
+Canvases:
+
+Primary: .github/workflows/ci.yml
+
+Secondary: ci-docs.md, all_canvases.md
+
+Tasks:
+
+Confirm CI jobs (lint, typecheck, build, test, artifact).
+
+Append names to all_canvases.md.
+
+Scaffold ci.yml with jobs; write ci-docs.md (caching, triggers, branch rules).
+
+Minimal slice: run CI locally via act or a dry-run script that executes all steps.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\.github\workflows" -Force | Out-Null
+ni "$root\.github\workflows\ci.yml","$root\ci-docs.md" -ItemType File -Force | Out-Null
+
+04 — Database & Migrations (Initial) — Starter Prompt
+
+Owner: Database & Migrations for Kori.
+
+Canvases:
+
+Primary: apps/api/prisma/schema.prisma
+
+Secondary: db-migrations-notes.md, apps/api/prisma/seed.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: baseline schema (users/sessions/clients/audit_logs), indices, seed script, rollback plan.
+
+Append to all_canvases.md.
+
+Scaffold schema.prisma + seed.ts.
+
+Minimal slice: prisma migrate dev + prisma db seed runs clean.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\apps\api\prisma" -Force | Out-Null
+ni "$root\apps\api\prisma\schema.prisma","$root\apps\api\prisma\seed.ts","$root\db-migrations-notes.md" -ItemType File -Force | Out-Null
+
+05 — API Skeleton & Middlewares — Starter Prompt
+
+Owner: API Skeleton & Middlewares for Kori.
+
+Canvases:
+
+Primary: apps/api/src/server.ts
+
+Secondary: api-contract.md, middlewares.md, all_canvases.md
+
+Tasks:
+
+Confirm scope: Fastify shell, error handler, rate limit, OpenAPI stub.
+
+Append to all_canvases.md.
+
+Scaffold server.ts (GET /healthz, /readyz, /version).
+
+Minimal slice: pnpm dev:api starts server; endpoints return JSON.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\apps\api\src" -Force | Out-Null
+ni "$root\apps\api\src\server.ts","$root\api-contract.md","$root\middlewares.md" -ItemType File -Force | Out-Null
+
+06 — Admin Auth (Sessions) — Starter Prompt
+
+Owner: Admin Auth (Sessions) for Kori.
+
+Canvases:
+
+Primary: apps/api/src/auth.ts
+
+Secondary: apps/api/src/guards/admin.ts, auth-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: login/logout/me, session cookie, CSRF, brute-force limits, guards.
+
+Append to all_canvases.md.
+
+Scaffold stubs + tests.
+
+Minimal slice: login→me→logout flow works with in-memory store.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\apps\api\src\guards" -Force | Out-Null
+ni "$root\apps\api\src\auth.ts","$root\apps\api\src\guards\admin.ts","$root\auth-tests.ts" -ItemType File -Force | Out-Null
+
+07 — Clients (CRM) — Starter Prompt
+
+Owner: Clients (CRM) for Kori.
+
+Canvases:
+
+Primary: apps/api/src/routes/clients.ts
+
+Secondary: apps/web/src/routes/clients/index.tsx, clients-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: CRUD + pagination + audit hooks + basic admin UI.
+
+Append to all_canvases.md.
+
+Scaffold API route + UI list page.
+
+Minimal slice: create+list a client in SQLite dev DB.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\apps\web\src\routes\clients" -Force | Out-Null
+ni "$root\apps\api\src\routes\clients.ts","$root\apps\web\src\routes\clients\index.tsx","$root\clients-tests.ts" -ItemType File -Force | Out-Null
+
+08 — Asset Ingest & Storage — Starter Prompt
+
+Owner: Asset Ingest & Storage for Kori.
+
+Canvases:
+
+Primary: apps/api/src/routes/ingest.ts
+
+Secondary: storage-layout.md, file-limits.md, ingest-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: upload, checksum, discover/scan, list, quotas/paths.
+
+Append to all_canvases.md.
+
+Scaffold upload endpoint (local disk first) + checksum util.
+
+Minimal slice: upload a JPG, record checksum, list it.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+ni "$root\apps\api\src\routes\ingest.ts","$root\storage-layout.md","$root\file-limits.md","$root\ingest-tests.ts" -ItemType File -Force | Out-Null
+
+09 — IPTC/XMP Embedder & Rights/Releases — Starter Prompt
+
+Owner: IPTC/XMP Embedder & Rights/Releases for Kori.
+
+Canvases:
+
+Primary: apps/api/src/jobs/embedder.ts
+
+Secondary: rights-policy.md, xmp-mapping.md, embed-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: mapping presets, dry-run vs apply, rights enforcement hooks.
+
+Append to all_canvases.md.
+
+Scaffold job with queue interface and dry-run logs.
+
+Minimal slice: run embed on sample image; verify fields logged/applied.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\apps\api\src\jobs" -Force | Out-Null
+ni "$root\apps\api\src\jobs\embedder.ts","$root\rights-policy.md","$root\xmp-mapping.md","$root\embed-tests.ts" -ItemType File -Force | Out-Null
+
+10 — Public Galleries (App Layer) — Starter Prompt
+
+Owner: Public Galleries (App Layer) for Kori.
+
+Canvases:
+
+Primary: apps/api/src/routes/publicGallery.ts
+
+Secondary: apps/web/src/routes/gallery/index.tsx, gallery-security.md, gallery-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: tokenized access, passwords/OTP, JSON feeds, anti-enumeration.
+
+Append to all_canvases.md.
+
+Scaffold API + gallery UI page.
+
+Minimal slice: token renders a gallery with 1 image from dev storage.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\apps\web\src\routes\gallery" -Force | Out-Null
+ni "$root\apps\api\src\routes\publicGallery.ts","$root\apps\web\src\routes\gallery\index.tsx","$root\gallery-security.md","$root\gallery-tests.ts" -ItemType File -Force | Out-Null
+
+11 — Delivery Substrate ADR (R2/CDN) — Starter Prompt
+
+Owner: Delivery Substrate ADR for Kori.
+
+Canvases:
+
+Primary: delivery-adr.md
+
+Secondary: r2-config.md, bandwidth-caps.md, purge-jobs.md, all_canvases.md
+
+Tasks:
+
+Confirm scope: build-vs-buy decision, minimal R2 integration, purge design.
+
+Append to all_canvases.md.
+
+Write ADR with decision matrix; add config doc and purge job outline.
+
+Minimal slice: mock call that uploads one file to R2 or local stub.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+ni "$root\delivery-adr.md","$root\r2-config.md","$root\bandwidth-caps.md","$root\purge-jobs.md" -ItemType File -Force | Out-Null
+
+12 — Proposals & Light E-Sign — Starter Prompt
+
+Owner: Proposals & Light E-Sign for Kori.
+
+Canvases:
+
+Primary: apps/api/src/routes/proposals.ts
+
+Secondary: proposal-model.md, otp-flow.md, proposal-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: draft→sent→viewed→accepted, OTP acceptance, PDF/A snapshot.
+
+Append to all_canvases.md.
+
+Scaffold API routes + model doc.
+
+Minimal slice: send a proposal and accept via OTP (in-memory).
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+ni "$root\apps\api\src\routes\proposals.ts","$root\proposal-model.md","$root\otp-flow.md","$root\proposal-tests.ts" -ItemType File -Force | Out-Null
+
+13 — Contracts & Template Manager — Starter Prompt
+
+Owner: Contracts & Template Manager for Kori.
+
+Canvases:
+
+Primary: apps/api/src/routes/contracts.ts
+
+Secondary: contract-templates.md, sign-flow.md, contract-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: templates library, signer flows, locked clauses, PDF/A archive.
+
+Append to all_canvases.md.
+
+Scaffold API + docs.
+
+Minimal slice: create a template and complete a one-party sign flow (mock).
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+ni "$root\apps\api\src\routes\contracts.ts","$root\contract-templates.md","$root\sign-flow.md","$root\contract-tests.ts" -ItemType File -Force | Out-Null
+
+14 — Invoicing & Payments — Starter Prompt
+
+Owner: Invoicing & Payments for Kori.
+
+Canvases:
+
+Primary: apps/api/src/routes/invoices.ts
+
+Secondary: payments-webhooks.ts, invoice-pdf.md, dunning-jobs.md, invoice-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: invoices/credits, numbering, VAT, Stripe/PayPal webhooks.
+
+Append to all_canvases.md.
+
+Scaffold API routes + webhook handler stubs.
+
+Minimal slice: create invoice and mark a mock payment.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+ni "$root\apps\api\src\routes\invoices.ts","$root\payments-webhooks.ts","$root\invoice-pdf.md","$root\dunning-jobs.md","$root\invoice-tests.ts" -ItemType File -Force | Out-Null
+
+15 — Reconciliation (Bank Import) — Starter Prompt
+
+Owner: Reconciliation (Bank Import) for Kori.
+
+Canvases:
+
+Primary: apps/api/src/routes/recon.ts
+
+Secondary: recon-algo.md, csv-schemas.md, recon-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: CSV import, matching engine, manual overrides, exports.
+
+Append to all_canvases.md.
+
+Scaffold API + algo doc + sample CSV schema.
+
+Minimal slice: import a CSV and match 1–2 records deterministically.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+ni "$root\apps\api\src\routes\recon.ts","$root\recon-algo.md","$root\csv-schemas.md","$root\recon-tests.ts" -ItemType File -Force | Out-Null
+
+16 — Accounting: Period Close — Starter Prompt
+
+Owner: Accounting: Period Close for Kori.
+
+Canvases:
+
+Primary: apps/api/src/routes/accounting.ts
+
+Secondary: close-wizard.md, journals.md, accounting-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: open/close/unlock periods, journals, attachments, reports.
+
+Append to all_canvases.md.
+
+Scaffold API + docs.
+
+Minimal slice: create a period, post a journal, close and export CSV.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+ni "$root\apps\api\src\routes\accounting.ts","$root\close-wizard.md","$root\journals.md","$root\accounting-tests.ts" -ItemType File -Force | Out-Null
+
+17 — Records & WORM Archive — Starter Prompt
+
+Owner: Records & WORM Archive for Kori.
+
+Canvases:
+
+Primary: apps/api/src/jobs/records.ts
+
+Secondary: retention-policy.md, verify-job.md, records-tests.ts, all_canvases.md
+
+Tasks:
+
+Confirm scope: retention policies, WORM locks, verification job.
+
+Append to all_canvases.md.
+
+Scaffold job + docs.
+
+Minimal slice: write a record, hash it, verify in a scheduled run (mock).
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\apps\api\src\jobs" -Force | Out-Null
+ni "$root\apps\api\src\jobs\records.ts","$root\retention-policy.md","$root\verify-job.md","$root\records-tests.ts" -ItemType File -Force | Out-Null
+
+18 — Frontend Shell & Admin UI — Starter Prompt
+
+Owner: Frontend Shell & Admin UI for Kori.
+
+Canvases:
+
+Primary: apps/web/src/app.tsx
+
+Secondary: ui-style-guide.md, accessibility.md, e2e-tests.md, all_canvases.md
+
+Tasks:
+
+Confirm scope: login screen, CRM views, gallery/public routes, invoice portal.
+
+Append to all_canvases.md.
+
+Scaffold a router shell with placeholder pages.
+
+Minimal slice: navigate /login→/clients and see mock data.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+mkdir "$root\apps\web\src" -Force | Out-Null
+ni "$root\apps\web\src\app.tsx","$root\ui-style-guide.md","$root\accessibility.md","$root\e2e-tests.md" -ItemType File -Force | Out-Null
+
+19 — Observability & Audit — Starter Prompt
+
+Owner: Observability & Audit for Kori.
+
+Canvases:
+
+Primary: apps/api/src/obs.ts
+
+Secondary: audit-spec.md, dashboards.md, all_canvases.md
+
+Tasks:
+
+Confirm scope: structured logs, metrics endpoint, audit appenders, request/trace IDs.
+
+Append to all_canvases.md.
+
+Scaffold obs.ts with logger factory, middleware, /metrics stub.
+
+Minimal slice: API logs with request IDs; /metrics returns counters.
+
+Test plan; Stable v0.1.
+
+Mass-create:
+
+$root="E:\Applications\Kori_web"
+ni "$root\apps\api\src\obs.ts","$root\audit-spec.md","$root\dashboards.md" -ItemType File -Force | Out-Null

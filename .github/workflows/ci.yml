@@ -1,7 +1,8 @@
-﻿# Stable v0.5 — 2025-10-19
+﻿# Stable v0.6 — 2025-10-19
 # CI/CD Pipeline for Kori (Monorepo)
-# Changelog v0.5:
-# - Avoid PATH issues: run pnpm via npx (PNPM="npx -y pnpm@9") in all steps
+# Changelog v0.6:
+# - Eliminate PATH dependence: use npx for pnpm in every step
+# - Remove pnpm/action-setup; keep setup-node cache: pnpm
 
 name: CI
 
@@ -26,14 +27,12 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      PNPM: npx -y pnpm@9
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20.x (+ cache)
+      - name: Setup Node 20.x (+ pnpm cache)
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
@@ -43,11 +42,11 @@ jobs:
         shell: bash
         run: |
           node -v
-          $PNPM -v
+          npx -y pnpm@9 -v
 
       - name: Install dependencies (workspace)
         shell: bash
-        run: $PNPM install --frozen-lockfile
+        run: npx -y pnpm@9 install --frozen-lockfile
 
       - name: Prepare API env (non-secret)
         shell: bash
@@ -56,15 +55,15 @@ jobs:
 
       - name: Typecheck
         shell: bash
-        run: $PNPM -r typecheck
+        run: npx -y pnpm@9 -r typecheck
 
       - name: Build
         shell: bash
-        run: $PNPM -r build
+        run: npx -y pnpm@9 -r build
 
       - name: Test
         shell: bash
-        run: $PNPM -r test --if-present
+        run: npx -y pnpm@9 -r test --if-present
 
       - name: Upload web dist
         if: ${{ always() && hashFiles('apps/web/dist/**') != '' }}

@@ -1,16 +1,25 @@
-# Stable v0.1 — 2025-10-19
-# Kori Monorepo — GitHub Actions CI
-# - Node 20.x LTS
-# - pnpm 9 via Corepack (cache enabled)
-# - Steps: install → typecheck → build → test → upload artifacts
+﻿# Stable v0.2 — 2025-10-19
+# CI/CD Pipeline for Kori (Monorepo)
+# Changelog v0.2:
+# - Cleaned YAML (moved prose to docs in next step)
+# - Switched to reliable pnpm/action-setup@v4
+# - Added permissions, test --if-present, if-no-files-found: ignore
+# - Auto-prepare apps/api/.env from .env.example if present
 
 name: CI
 
 on:
   push:
-    branches: ["main", "*/*", "*"]
+    branches:
+      - main
+      - "**/*"
+      - "*"
   pull_request:
-    branches: ["main"]
+    branches: [ main ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -31,14 +40,23 @@ jobs:
           node-version: 20.x
           cache: pnpm
 
-      - name: Enable Corepack & pnpm 9
+      - name: Setup pnpm 9
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Show tool versions
         run: |
-          corepack enable
-          corepack prepare pnpm@9 --activate
+          node -v
           pnpm -v
 
       - name: Install dependencies (workspace)
         run: pnpm install --frozen-lockfile
+
+      - name: Prepare API env (non-secret)
+        run: |
+          if [ -f apps/api/.env.example ]; then cp apps/api/.env.example apps/api/.env; fi
 
       - name: Typecheck
         run: pnpm -r typecheck
@@ -47,7 +65,7 @@ jobs:
         run: pnpm -r build
 
       - name: Test
-        run: pnpm -r test
+        run: pnpm -r test --if-present
 
       - name: Upload web dist
         if: ${{ always() && hashFiles('apps/web/dist/**') != '' }}
@@ -55,96 +73,14 @@ jobs:
         with:
           name: web-dist
           path: apps/web/dist
+          if-no-files-found: ignore
 
       - name: Upload api dist
         if: ${{ always() && hashFiles('apps/api/dist/**') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: api-dist
-          path: apps/api/dist
-
-- scaffold.ps1
-- .github/workflows/ci.yml
-
-
-## File Location
-- Workflow path: `.github/workflows/ci.yml`
-
-## Troubleshooting
-- **Corepack/pnpm issues:** Prefer Node 20.x LTS in CI (pinned via `actions/setup-node@v4`).
-- **Cache misses:** Ensure `pnpm-lock.yaml` is committed (cache relies on it).
-- **Long installs:** Avoid `--no-optional` unless required; may break deps.
-- **Shared build ordering:** Root `predev` builds `packages/shared` locally. In CI, the `Build` job runs `pnpm -r build` which builds shared before API.
-
-> Stable note to add once the first workflow is committed and green.
-- ci.yml (canvas for `.github/workflows/ci.yml`)
-- .github/workflows/ci.yml
-
-- .github/workflows/ci.yml
-
-- .github/workflows/ci.yml
-
-
-
-
-
-
-
-
-
-## CI Workflow Reference (added 2025-10-19)
-- **Path:** `.github/workflows/ci.yml`
-- **Node:** 20.x LTS via `actions/setup-node@v4`
-- **Package Manager:** pnpm 9 via Corepack (cache enabled)
-- **Steps:** checkout → enable Corepack → install (frozen lockfile) → typecheck → build → test → upload artifacts.
-
-### How to Verify on GitHub
-1. Push to `main` or open a PR.  
-2. Go to **Actions → CI**; confirm the job **build-and-test** runs and turns green.  
-3. If available, download artifacts: **web-dist** and **api-dist**.
-
-### Troubleshooting
-- **Corepack signature problems:** Node 20 LTS is pinned in CI. If pnpm fails to activate, temporarily switch to `pnpm/action-setup`.
-- **Cache misses:** Ensure `pnpm-lock.yaml` is committed; cache key depends on it.
-- **Shared package order:** Root `predev` handles local dev; CI’s `pnpm -r build` builds `packages/shared` before apps.
-
-### Definition of Done for CI (v0.1)
-- CI blocks merges when red; runs on `push` and `pull_request` to `main`.
-- `typecheck`, `build`, and `test` complete within 20 minutes.
-- Artifacts upload when present.
-
-- scaffold.ps1
-- .github/workflows/ci.yml
-
-
----
-
-## Stable Notes — v0.1 (2025-10-19)
-**Changelog**
-- Monorepo structure scaffolded (apps/api, apps/web, packages/shared).
-- Runnable slice: API `/healthz`, Web shows “Backend status: API OK”.
-- Shared package build + root `predev` wired.
-- UTF-8 no BOM writes to prevent JSON/PostCSS parse errors.
-- CI workflow prepared (Node 20 + pnpm 9).
-
-**How to Test**
-1. Install deps and start dev: `pnpm install` → `pnpm dev`.
-2. Visit the web app at localhost:5173 and confirm API OK.
-3. Call the API at localhost:4000/healthz and confirm `{ ok: true }`.
-
-**Next**
-- Add Playwright smoke tests and Prisma (SQLite) for the first entity.
-
-
----
-
-## Stable v0.1 — 2025-10-19
-**Changelog**
-- Monorepo scaffold delivered (apps/api, apps/web, packages/shared).
-- API `/healthz` and Web status page working.
-- Shared package build and root predev wired.
-- UTF-8 no BOM writes to avoid JSON/PostCSS issues.
-- CI workflow prepared (Node 20 + pnpm 9).
-
-**How to Test**
-- `pnpm install` → `pnpm dev` → visit localhost:5173 and call localhost:4000/healthz.
+          path: |
+            apps/api/dist
+            apps/api/prisma/**
+          if-no-files-found: ignore

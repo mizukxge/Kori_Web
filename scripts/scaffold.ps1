@@ -2,7 +2,7 @@
 Stable v0.1  2025-10-19
 Kori  Local CI Dry-Run Helper
 
-Runs the same steps as CI: install → optional API .env prep  typecheck  build  test.
+Runs the same steps as CI: install  optional API .env prep → typecheck → build → test.
 Creates a timestamped transcript under ./logs/ and returns non-zero on failure.
 #>
 

@@ -1,8 +1,9 @@
-﻿# Stable v0.7 — 2025-10-19
+﻿# Stable v0.8 — 2025-10-19
 # CI/CD Pipeline for Kori (Monorepo)
-# Changelog v0.7:
-# - Install pnpm via official standalone script
-# - Export pnpm path using $GITHUB_PATH (no PATH assumptions, no Corepack, no pnpm/action-setup)
+# Changelog v0.8:
+# - Remove setup-node cache:pnpm (it needs pnpm preinstalled and was failing)
+# - Install pnpm first (standalone) and export PATH explicitly
+# - Add actions/cache AFTER pnpm is installed using the actual pnpm store path
 
 name: CI
 
@@ -32,23 +33,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20.x (+ pnpm cache)
+      - name: Setup Node 20.x
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
-          cache: pnpm
+          # NOTE: no cache here — it was invoking pnpm before we installed it
 
-      # --- Robust pnpm install: standalone + add to PATH explicitly ---
+      # --- Install pnpm first (standalone) and add to PATH ---
       - name: Install pnpm (standalone) and export PATH
         shell: bash
         run: |
           set -euo pipefail
           curl -fsSL https://get.pnpm.io/install.sh | SHELL=bash bash -s -- --version 9
-          # pnpm standalone installs to ~/.local/share/pnpm
           echo "$HOME/.local/share/pnpm" >> "$GITHUB_PATH"
-          # verify
           ~/.local/share/pnpm/pnpm -v
-      # -----------------------------------------------------------------
+
+      # --- (Optional) Restore pnpm store cache now that pnpm exists ---
+      - name: Resolve pnpm store path
+        id: pnpm_store
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Show tool versions
         shell: bash

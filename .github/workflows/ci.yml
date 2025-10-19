@@ -1,7 +1,8 @@
-﻿# Stable v0.3 — 2025-10-19
+﻿# Stable v0.4 — 2025-10-19
 # CI/CD Pipeline for Kori (Monorepo)
-# Changelog v0.3:
-# - Add Corepack fallback step to ensure pnpm is available on runners
+# Changelog v0.4:
+# - Install pnpm via npm (robust) instead of relying on action/Corepack
+# - Keep setup-node cache: pnpm for dependency caching
 
 name: CI
 
@@ -31,26 +32,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20.x
+      - name: Setup Node 20.x (+ pnpm cache)
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
           cache: pnpm
 
-      - name: Setup pnpm 9
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
-      # Ensure pnpm is present even if the action didn't add it to PATH
-      - name: Ensure pnpm available (Corepack fallback)
-        shell: bash
+      # Robust install: ensure pnpm is on PATH
+      - name: Install pnpm 9 (global)
         run: |
-          if ! command -v pnpm >/dev/null 2>&1; then
-            corepack enable
-            corepack prepare pnpm@9 --activate
-          fi
+          npm i -g pnpm@9
           pnpm -v
 
       - name: Show tool versions

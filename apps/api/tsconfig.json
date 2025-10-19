@@ -7,7 +7,15 @@
                                              "../../packages/shared/src"
                                          ],
                             "baseUrl":  ".",
-                            "skipLibCheck":  true
+                            "skipLibCheck":  true,
+                            "paths":  {
+                                          "@kori/shared":  [
+                                                               "../../packages/shared/src/index.ts"
+                                                           ],
+                                          "@kori/shared/*":  [
+                                                                 "../../packages/shared/src/*"
+                                                             ]
+                                      }
                         },
     "include":  [
                     "src"

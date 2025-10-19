@@ -70,7 +70,7 @@ jobs:
 
       - name: Install dependencies (workspace)
         shell: bash
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Prepare API env (non-secret)
         shell: bash
@@ -106,3 +106,4 @@ jobs:
             apps/api/dist
             apps/api/prisma/**
           if-no-files-found: ignore
+

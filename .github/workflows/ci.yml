@@ -1,8 +1,8 @@
-﻿# Stable v0.6 — 2025-10-19
+﻿# Stable v0.7 — 2025-10-19
 # CI/CD Pipeline for Kori (Monorepo)
-# Changelog v0.6:
-# - Eliminate PATH dependence: use npx for pnpm in every step
-# - Remove pnpm/action-setup; keep setup-node cache: pnpm
+# Changelog v0.7:
+# - Install pnpm via official standalone script
+# - Export pnpm path using $GITHUB_PATH (no PATH assumptions, no Corepack, no pnpm/action-setup)
 
 name: CI
 
@@ -38,15 +38,27 @@ jobs:
           node-version: 20.x
           cache: pnpm
 
+      # --- Robust pnpm install: standalone + add to PATH explicitly ---
+      - name: Install pnpm (standalone) and export PATH
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://get.pnpm.io/install.sh | SHELL=bash bash -s -- --version 9
+          # pnpm standalone installs to ~/.local/share/pnpm
+          echo "$HOME/.local/share/pnpm" >> "$GITHUB_PATH"
+          # verify
+          ~/.local/share/pnpm/pnpm -v
+      # -----------------------------------------------------------------
+
       - name: Show tool versions
         shell: bash
         run: |
           node -v
-          npx -y pnpm@9 -v
+          pnpm -v
 
       - name: Install dependencies (workspace)
         shell: bash
-        run: npx -y pnpm@9 install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Prepare API env (non-secret)
         shell: bash
@@ -55,15 +67,15 @@ jobs:
 
       - name: Typecheck
         shell: bash
-        run: npx -y pnpm@9 -r typecheck
+        run: pnpm -r typecheck
 
       - name: Build
         shell: bash
-        run: npx -y pnpm@9 -r build
+        run: pnpm -r build
 
       - name: Test
         shell: bash
-        run: npx -y pnpm@9 -r test --if-present
+        run: pnpm -r test --if-present
 
       - name: Upload web dist
         if: ${{ always() && hashFiles('apps/web/dist/**') != '' }}

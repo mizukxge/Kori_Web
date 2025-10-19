@@ -31,11 +31,13 @@ function Stop-WithError([string]$msg, [int]$code = 1) {
 }
 
 function Run-Step([string]$name, [scriptblock]$action) {
-  Write-Host " $name" -ForegroundColor Cyan
+  Write-Host "➤ $name" -ForegroundColor Cyan
   $sw = [System.Diagnostics.Stopwatch]::StartNew()
   & $action
+  $code = $LASTEXITCODE
   $sw.Stop()
-  Write-Host " $name ($($sw.Elapsed.ToString()))" -ForegroundColor Green
+  if ($code -ne 0) { throw "Step '$name' failed with exit code $code" }
+  Write-Host "✓ $name ($($sw.Elapsed.ToString()))" -ForegroundColor Green
 }
 
 # Optional clean to mimic fresh CI
@@ -78,3 +80,4 @@ finally {
 
 Write-Host "All steps completed. Log: $logFile" -ForegroundColor Green
 exit 0
+

@@ -1,8 +1,7 @@
-﻿# Stable v0.4 — 2025-10-19
+﻿# Stable v0.5 — 2025-10-19
 # CI/CD Pipeline for Kori (Monorepo)
-# Changelog v0.4:
-# - Install pnpm via npm (robust) instead of relying on action/Corepack
-# - Keep setup-node cache: pnpm for dependency caching
+# Changelog v0.5:
+# - Avoid PATH issues: run pnpm via npx (PNPM="npx -y pnpm@9") in all steps
 
 name: CI
 
@@ -27,43 +26,45 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      PNPM: npx -y pnpm@9
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20.x (+ pnpm cache)
+      - name: Setup Node 20.x (+ cache)
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
           cache: pnpm
 
-      # Robust install: ensure pnpm is on PATH
-      - name: Install pnpm 9 (global)
-        run: |
-          npm i -g pnpm@9
-          pnpm -v
-
       - name: Show tool versions
+        shell: bash
         run: |
           node -v
-          pnpm -v
+          $PNPM -v
 
       - name: Install dependencies (workspace)
-        run: pnpm install --frozen-lockfile
+        shell: bash
+        run: $PNPM install --frozen-lockfile
 
       - name: Prepare API env (non-secret)
+        shell: bash
         run: |
           if [ -f apps/api/.env.example ]; then cp apps/api/.env.example apps/api/.env; fi
 
       - name: Typecheck
-        run: pnpm -r typecheck
+        shell: bash
+        run: $PNPM -r typecheck
 
       - name: Build
-        run: pnpm -r build
+        shell: bash
+        run: $PNPM -r build
 
       - name: Test
-        run: pnpm -r test --if-present
+        shell: bash
+        run: $PNPM -r test --if-present
 
       - name: Upload web dist
         if: ${{ always() && hashFiles('apps/web/dist/**') != '' }}

@@ -1,7 +1,7 @@
-{
+﻿{
     "name":  "kori-monorepo",
     "private":  true,
-    "packageManager":  "pnpm@9",
+    "packageManager":  "pnpm@9.15.9",
     "scripts":  {
                     "dev":  "pnpm -r --parallel --filter ./apps/* run dev",
                     "build":  "pnpm -r build",
@@ -11,6 +11,8 @@
                     "predev":  "pnpm -C packages/shared build"
                 },
     "devDependencies":  {
-                            "@types/node":  "^22.9.0"
+                            "@types/node":  "^22.9.0",
+                            "tsx":  "^4.19.1",
+                            "zod":  "^4.1.12"
                         }
 }

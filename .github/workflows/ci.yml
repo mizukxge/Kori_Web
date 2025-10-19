@@ -1,10 +1,7 @@
-﻿# Stable v0.2 — 2025-10-19
+﻿# Stable v0.3 — 2025-10-19
 # CI/CD Pipeline for Kori (Monorepo)
-# Changelog v0.2:
-# - Cleaned YAML (moved prose to docs in next step)
-# - Switched to reliable pnpm/action-setup@v4
-# - Added permissions, test --if-present, if-no-files-found: ignore
-# - Auto-prepare apps/api/.env from .env.example if present
+# Changelog v0.3:
+# - Add Corepack fallback step to ensure pnpm is available on runners
 
 name: CI
 
@@ -45,6 +42,16 @@ jobs:
         with:
           version: 9
           run_install: false
+
+      # Ensure pnpm is present even if the action didn't add it to PATH
+      - name: Ensure pnpm available (Corepack fallback)
+        shell: bash
+        run: |
+          if ! command -v pnpm >/dev/null 2>&1; then
+            corepack enable
+            corepack prepare pnpm@9 --activate
+          fi
+          pnpm -v
 
       - name: Show tool versions
         run: |

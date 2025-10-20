@@ -9,10 +9,18 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 let proc: ChildProcess | null = null;
 const PORT = process.env.TEST_API_PORT ? Number(process.env.TEST_API_PORT) : 4001;
-const BASE = `http://127.0.0.1:${PORT}`; // IPv4 avoids ::1 issues
+const BASE = `http://127.0.0.1:${PORT}`; // use IPv4 to avoid ::1 issues on Windows
+
+function fmtExit(ex: unknown): string {
+  if (ex && typeof ex === 'object') {
+    const anyEx = ex as { code?: unknown; signal?: unknown };
+    return `Child exited early (code=${String(anyEx.code)} signal=${String(anyEx.signal)})`;
+  }
+  return 'Child still running.';
+}
 
 async function buildSharedIfNeeded() {
-  // Ensure @kori/shared is built so server imports resolve.
+  // Ensure @kori/shared is built (monorepo predev step); keeps server imports from failing.
   const isWin = process.platform === 'win32';
   const r = spawnSync('pnpm', ['-C', 'packages/shared', 'build'], {
     stdio: 'inherit',
@@ -70,7 +78,7 @@ async function startServer() {
   if (!started) {
     const msg = [
       'Server did not become ready within timeout.',
-      earlyExit ? `Child exited early (code=${earlyExit.code} signal=${earlyExit.signal})` : 'Child still running.',
+      fmtExit(earlyExit),
       outBuf ? `\n--- child stdout ---\n${outBuf}` : '',
       errBuf ? `\n--- child stderr ---\n${errBuf}` : '',
     ].join('\n');
@@ -140,6 +148,7 @@ describe('API skeleton', () => {
     expect(res.status).toBe(404);
     const json = await res.json();
     expect(json).toEqual({ error: 'Not Found' });
+    // Ensure error shape remains stable
     expect(Object.keys(json)).toEqual(['error']);
   });
 });

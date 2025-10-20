@@ -19,5 +19,5 @@
                         },
     "include":  [
                     "src"
-                ]
+, "test/health.int.test.ts"                ]
 }

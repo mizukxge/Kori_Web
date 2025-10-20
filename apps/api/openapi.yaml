@@ -1,0 +1,118 @@
+openapi: 3.1.0
+info:
+  title: Kori API
+  description: |
+    Minimal surface for service health, readiness, and version exposure.
+    Business endpoints will live under /v1 in later milestones.
+  version: 0.1.0
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:{port}
+    description: Local development
+    variables:
+      port:
+        default: "4000"
+        enum: ["3000", "4000", "5000"]
+  - url: https://api.kori.local
+    description: Local reverse proxy or hosts mapping
+security: []  # Explicitly declare no auth required for these endpoints
+paths:
+  /healthz:
+    get:
+      summary: Liveness probe
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              examples:
+                okExample:
+                  value:
+                    ok: true
+                    app: Kori
+        '400':
+          description: Bad request (unexpected input)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /readyz:
+    get:
+      summary: Readiness probe
+      operationId: getReady
+      responses:
+        '200':
+          description: Service is ready to receive traffic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ready'
+              examples:
+                readyExample:
+                  value:
+                    ready: true
+        '400':
+          description: Bad request (unexpected input)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /version:
+    get:
+      summary: Returns the running API version
+      operationId: getVersion
+      responses:
+        '200':
+          description: Version OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+              examples:
+                versionExample:
+                  value:
+                    version: "0.1.0"
+        '400':
+          description: Bad request (unexpected input)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Health:
+      type: object
+      additionalProperties: false
+      properties:
+        ok:
+          type: boolean
+        app:
+          type: string
+      required: [ok]
+    Ready:
+      type: object
+      additionalProperties: false
+      properties:
+        ready:
+          type: boolean
+      required: [ready]
+    Version:
+      type: object
+      additionalProperties: false
+      properties:
+        version:
+          type: string
+          description: Semantic version of the API deployment
+          example: 0.1.0
+      required: [version]
+    Error:
+      type: object
+      additionalProperties: false
+      properties:
+        error:
+          type: string
+      required: [error]

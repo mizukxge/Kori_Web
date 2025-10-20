@@ -1,4 +1,4 @@
-{
+﻿{
     "extends":  "../../tsconfig.base.json",
     "compilerOptions":  {
                             "outDir":  "dist",
@@ -11,12 +11,11 @@
                                           "vite/client",
                                           "react",
                                           "react-dom"
-                                      ],
-                            "jsx":  "react-jsx",
-                            "skipLibCheck":  true
+                                      ]
                         },
     "include":  [
-                    "src"
+                    "src",
+                    "vite.config.ts"
                 ],
     "exclude":  [
                     "vite.config.ts"

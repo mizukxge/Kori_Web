@@ -2,17 +2,17 @@
  * Kori — API Integration Tests (health/version/404)
  * Stable v0.1 — 2025-10-20
  */
-import { spawn, type ChildProcessWithoutNullStreams, spawnSync } from 'node:child_process';
+import { spawn, type ChildProcess, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
 import { resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-let proc: ChildProcessWithoutNullStreams | null = null;
+let proc: ChildProcess | null = null;
 const PORT = process.env.TEST_API_PORT ? Number(process.env.TEST_API_PORT) : 4001;
-const BASE = `http://127.0.0.1:${PORT}`; // use IPv4 to avoid ::1 issues on Windows
+const BASE = `http://127.0.0.1:${PORT}`; // IPv4 avoids ::1 issues
 
 async function buildSharedIfNeeded() {
-  // Ensure @kori/shared is built (monorepo predev step); keeps server imports from failing.
+  // Ensure @kori/shared is built so server imports resolve.
   const isWin = process.platform === 'win32';
   const r = spawnSync('pnpm', ['-C', 'packages/shared', 'build'], {
     stdio: 'inherit',
@@ -55,21 +55,42 @@ async function startServer() {
     shell: isWin // ✅ Windows-safe spawn
   });
 
-  // surface errors
-  proc.stderr.on('data', (buf) => {
-    // eslint-disable-next-line no-console
-    console.error(buf.toString());
-  });
+  // Collect child output to aid triage if boot fails
+  let outBuf = '';
+  let errBuf = '';
+  proc.stdout?.on('data', (b: Buffer) => { outBuf += b.toString(); });
+  proc.stderr?.on('data', (b: Buffer) => { errBuf += b.toString(); });
 
-  // Poll the health endpoint until ready (max 10s)
-  const started = await waitForReady(`${BASE}/healthz`, 10_000);
-  if (!started) throw new Error('Server did not become ready within 10s');
+  // If the process exits before we're ready, surface a helpful error
+  let earlyExit: { code: number | null; signal: NodeJS.Signals | null } | null = null;
+  proc.on('exit', (code, signal) => { earlyExit = { code, signal }; });
+
+  // Poll the health endpoint until ready (max 20s)
+  const started = await waitForReady(`${BASE}/healthz`, 20_000, () => earlyExit);
+  if (!started) {
+    const msg = [
+      'Server did not become ready within timeout.',
+      earlyExit ? `Child exited early (code=${earlyExit.code} signal=${earlyExit.signal})` : 'Child still running.',
+      outBuf ? `\n--- child stdout ---\n${outBuf}` : '',
+      errBuf ? `\n--- child stderr ---\n${errBuf}` : '',
+    ].join('\n');
+    throw new Error(msg);
+  }
 }
 
-async function waitForReady(url: string, timeoutMs: number) {
+async function waitForReady(
+  url: string,
+  timeoutMs: number,
+  getEarlyExit?: () => { code: number | null; signal: NodeJS.Signals | null } | null
+) {
   const start = Date.now();
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    // If process exited, fail fast
+    if (getEarlyExit) {
+      const ex = getEarlyExit();
+      if (ex) return false;
+    }
     try {
       const res = await fetch(url);
       if (res.ok) return true;
@@ -82,9 +103,10 @@ async function waitForReady(url: string, timeoutMs: number) {
 }
 
 async function stopServer() {
-  if (!proc) return;
-  proc.kill('SIGTERM');
-  try { await once(proc, 'exit'); } catch { /* ignore */ }
+  const p = proc;
+  if (!p) return; // TS: proc may be null
+  p.kill('SIGTERM');
+  try { await once(p, 'exit'); } catch { /* ignore */ }
   proc = null;
 }
 
@@ -118,5 +140,6 @@ describe('API skeleton', () => {
     expect(res.status).toBe(404);
     const json = await res.json();
     expect(json).toEqual({ error: 'Not Found' });
+    expect(Object.keys(json)).toEqual(['error']);
   });
 });
